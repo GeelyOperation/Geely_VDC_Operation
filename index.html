@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VDC Storing Unit Trial</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; min-height: 100vh; padding: 16px; }
+  .card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .header { background: linear-gradient(135deg, #2563eb, #4338ca); color: #fff; border-radius: 16px; padding: 16px 20px; margin-bottom: 16px; }
+  .header h2 { font-size: 18px; font-weight: 700; }
+  .header p { font-size: 12px; opacity: .75; margin-top: 2px; }
+  .section-title { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .num { width: 24px; height: 24px; border-radius: 50%; background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .title-text { font-weight: 600; font-size: 14px; color: #1e293b; flex: 1; }
+  .badge-mandatory { font-size: 10px; font-weight: 700; color: #dc2626; background: #fef2f2; padding: 2px 8px; border-radius: 999px; }
+  .badge-optional { font-size: 10px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 999px; }
+  .hint { font-size: 11px; color: #94a3b8; margin-left: 32px; margin-bottom: 6px; }
+  input[type=text], input[type=number], textarea, select {
+    width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px;
+    font-size: 13px; color: #1e293b; margin-top: 6px; outline: none;
+    transition: border .2s;
+  }
+  input:focus, textarea:focus { border-color: #3b82f6; }
+  .photo-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .photo-btn { flex: 1; padding: 9px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; font-size: 12px; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .photo-btn:hover { background: #f8fafc; }
+  .thumb { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; }
+  .acc-item { border: 1px solid #f1f5f9; border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+  .acc-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; margin-bottom: 4px; }
+  .acc-label input[type=checkbox] { width: 16px; height: 16px; margin: 0; }
+  .btn-primary { width: 100%; padding: 14px; background: #2563eb; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-primary:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+  .btn-secondary { width: 100%; padding: 12px; background: #fff; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+  .log { background: #0f172a; border-radius: 12px; padding: 12px; font-family: monospace; font-size: 12px; max-height: 160px; overflow-y: auto; margin-top: 12px; }
+  .log p { margin-bottom: 3px; }
+  .log .ok { color: #34d399; }
+  .log .err { color: #f87171; }
+  .log .warn { color: #fbbf24; }
+  .log .info { color: #94a3b8; }
+  .model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0 16px; }
+  .model-btn { padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; background: #fff; font-weight: 700; font-size: 14px; color: #64748b; cursor: pointer; }
+  .model-btn.active { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+  .info-box { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 12px; font-size: 12px; color: #1d4ed8; margin-bottom: 16px; display: flex; gap: 8px; }
+  .warn-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 12px; font-size: 12px; color: #92400e; margin-bottom: 8px; }
+  .success-icon { font-size: 48px; text-align: center; margin-bottom: 12px; }
+  .vin-input { font-family: monospace; letter-spacing: 2px; text-transform: uppercase; }
+  .char-count { font-size: 11px; color: #94a3b8; text-align: right; margin-top: 3px; }
+  .alert-red { font-size: 11px; color: #ef4444; margin-top: 4px; }
+  #screen-success { display: none; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="screen-login">
+  <div class="card">
+    <div style="text-align:center; margin-bottom:24px;">
+      <div style="font-size:40px;">🚗</div>
+      <h1 style="font-size:20px;font-weight:700;color:#1e293b;">VDC Storing Unit</h1>
+      <p style="font-size:12px;color:#94a3b8;margin-top:4px;">Web Trial — Live Sheet Connection</p>
+    </div>
+
+    <div class="info-box">
+      ℹ️ <span>Data submits to the real sheet via GET (bypasses CORS). Photos preview locally — Drive upload is Android-only.</span>
+    </div>
+
+    <label style="font-size:13px;font-weight:600;color:#374151;">Username</label>
+    <input type="text" id="inp-username" placeholder="Enter username" />
+
+    <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-top:14px;margin-bottom:4px;">Select Model</label>
+    <div class="model-grid">
+      <button class="model-btn" onclick="selectModel('E245',this)">E245</button>
+      <button class="model-btn" onclick="selectModel('P145',this)">P145</button>
+      <button class="model-btn" onclick="selectModel('E22H',this)">E22H</button>
+    </div>
+
+    <label style="font-size:13px;font-weight:600;color:#374151;">VIN (17 characters)</label>
+    <input type="text" id="inp-vin" class="vin-input" maxlength="17" placeholder="e.g. MGEP1234567890001" oninput="this.value=this.value.toUpperCase();document.getElementById('vin-count').textContent=this.value.length+'/17'" />
+    <div class="char-count" id="vin-count">0/17</div>
+
+    <button class="btn-primary" id="btn-start" onclick="startChecklist()" disabled>Start Checklist</button>
+  </div>
+</div>
+
+<!-- CHECKLIST SCREEN -->
+<div id="screen-checklist" style="display:none;">
+  <div class="header">
+    <h2 id="hdr-model-vin">E245 · MGEP...</h2>
+    <p id="hdr-user">Storing Unit</p>
+  </div>
+
+  <!-- 1. Tire Pressure -->
+  <div class="card">
+    <div class="section-title">
+      <div class="num">1</div>
+      <div class="title-text">Tire Pressure Check</div>
+      <span class="badge-mandatory">Mandatory</span>
+    </div>
+    <input type="text" id="inp-tire" placeholder="PSI reading" />
+    <div class="photo-row">
+      <button class="photo-btn" onclick="pickPhoto('tire')">📷 Take Photo (preview only)</button>
+      <img id="thumb-tire" class="thumb" style="display:none;" />
+    </div>
+    <input type="file" id="file-tire" accept="image/*" capture="environment" style="display:none;" onchange="previewPhoto('tire',this)" />
+  </div>
+
+  <!-- 2. Battery -->
+  <div class="card">
+    <div class="section-title">
+      <div class="num">2</div>
+      <div class="title-text">12V Battery Inspection</div>
+      <span class="badge-mandatory">Mandatory</span>
+    </div>
+    <p class="hint">Minimum 12.5V</p>
+    <input type="text" id="inp-voltage" placeholder="Voltage (V)" inputmode="decimal" oninput="checkVoltage()" />
+    <p class="alert-red" id="alert-voltage" style="display:none;">⚠ Below minimum 12.5V</p>
+    <div class="photo-row">
+      <button class="photo-btn" onclick="pickPhoto('voltage')">📷 Take Photo (preview only)</button>
+      <img id="thumb-voltage" class="thumb" style="display:none;" />
+    </div>
+    <input type="file" id="file-voltage" accept="image/*" capture="environment" style="display:none;" onchange="previewPhoto('voltage',this)" />
+  </div>
+
+  <!-- 3. SOC -->
+  <div class="card">
+    <div class="section-title">
+      <div class="num">3</div>
+      <div class="title-text">EV/Hybrid Power Battery SOC</div>
+      <span class="badge-mandatory">Mandatory</span>
+    </div>
+    <p class="hint">Minimum 30%</p>
+    <input type="text" id="inp-soc" placeholder="SOC (%)" inputmode="decimal" oninput="checkSoc()" />
+    <p class="alert-red" id="alert-soc" style="display:none;">⚠ Below minimum 30%</p>
+    <div class="photo-row">
+      <button class="photo-btn" onclick="pickPhoto('soc')">📷 Take Photo (preview only)</button>
+      <img id="thumb-soc" class="thumb" style="display:none;" />
+    </div>
+    <input type="file" id="file-soc" accept="image/*" capture="environment" style="display:none;" onchange="previewPhoto('soc',this)" />
+  </div>
+
+  <!-- 4. Accessories -->
+  <div class="card">
+    <div class="section-title">
+      <div class="num">4</div>
+      <div class="title-text">Accessories</div>
+      <span class="badge-mandatory">Mandatory</span>
+    </div>
+    <p class="hint" id="acc-hint">One photo per item</p>
+    <div id="acc-container"></div>
+  </div>
+
+  <!-- 5. Remarks -->
+  <div class="card">
+    <div class="section-title">
+      <div class="num">5</div>
+      <div class="title-text">Remarks</div>
+      <span class="badge-optional">Optional</span>
+    </div>
+    <textarea id="inp-remarks" placeholder="Remarks" rows="2"></textarea>
+    <div class="photo-row">
+      <button class="photo-btn" onclick="pickPhoto('remarks')">📷 Take Photo (preview only)</button>
+      <img id="thumb-remarks" class="thumb" style="display:none;" />
+    </div>
+    <input type="file" id="file-remarks" accept="image/*" capture="environment" style="display:none;" onchange="previewPhoto('remarks',this)" />
+  </div>
+
+  <div id="log-panel" class="log"><p class="info">Submission log will appear here…</p></div>
+
+  <button class="btn-primary" id="btn-submit" onclick="handleSubmit()">Submit Checklist</button>
+  <button class="btn-secondary" onclick="goBack()">← Back</button>
+</div>
+
+<!-- SUCCESS SCREEN -->
+<div id="screen-success">
+  <div class="card" style="text-align:center;padding:40px 20px;">
+    <div class="success-icon">✅</div>
+    <h2 style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:6px;">Trial Successful!</h2>
+    <p id="success-info" style="font-size:13px;color:#64748b;margin-bottom:16px;"></p>
+    <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:12px;margin-bottom:12px;text-align:left;">
+      <p style="font-size:12px;font-weight:700;color:#065f46;">✓ Row saved to sheet</p>
+      <p style="font-size:12px;color:#047857;">VDC_Storing_Unit_His · VDC Storing Unit History</p>
+    </div>
+    <div class="warn-box" style="text-align:left;">
+      <p style="font-weight:700;margin-bottom:2px;">⚠ Photos</p>
+      <p>Photos preview locally in web trial. Drive upload (Root / date / VIN) runs from the Android app.</p>
+    </div>
+    <button class="btn-primary" onclick="resetApp()">Try Again</button>
+  </div>
+</div>
+
+<script>
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbzrHchj2BPElcjH9OPXj7CeIX4scOSFId5ZI-9oJ4vp4BRIUpefdxhTT88IHqeOd_Qp/exec";
+
+const ACCESSORIES = {
+  P145: { keyRemote:"Key Remote (1 Set)", fireExtinguisher:"Fire Extinguisher (1 Pc)", medicalKit:"Medical Kit (1 Set)", tireRepairKit:"Tire Repair Kit (1 Set)", safetyTriangle:"Safety Triangle (2 Pcs)", warrantyBook:"Warranty Book (1 Pc)", manualBook:"Manual Book (1 Pc)" },
+  E245: { keyRemote:"Key Remote (1 Set)", fireExtinguisher:"Fire Extinguisher (1 Pc)", medicalKit:"Medical Kit (1 Set)", tireRepairKit:"Tire Repair Kit (1 Set)", safetyTriangle:"Safety Triangle (2 Pcs)", manualBook:"Manual Book (1 Pc)", multimediaBook:"Multimedia Book (1 Pc)", warrantyBook:"Warranty Book (1 Pc)", portableCharger:"Portable Charger (1 Pc)" },
+  E22H: { keyRemote:"Key Remote (1 Set)", fireExtinguisher:"Fire Extinguisher (1 Pc)", medicalKit:"Medical Kit (1 Set)", gelTire:"Gel Tire (1 Set)", safetyTriangle:"Safety Triangle (2 Pcs)", manualBook:"Manual Book (1 Pc)", warrantyBook:"Warranty Book (1 Pc)", portableCharger:"Portable Charger (1 Pc)" },
+};
+
+let selectedModel = "";
+let logs = [];
+
+// Watch inputs to enable Start button
+document.getElementById('inp-username').addEventListener('input', validateLogin);
+document.getElementById('inp-vin').addEventListener('input', validateLogin);
+
+function validateLogin() {
+  const u = document.getElementById('inp-username').value.trim();
+  const v = document.getElementById('inp-vin').value.trim();
+  document.getElementById('btn-start').disabled = !(u && selectedModel && v.length === 17);
+}
+
+function selectModel(m, btn) {
+  selectedModel = m;
+  document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  validateLogin();
+}
+
+function startChecklist() {
+  const username = document.getElementById('inp-username').value.trim();
+  const vin      = document.getElementById('inp-vin').value.trim();
+  document.getElementById('hdr-model-vin').textContent = selectedModel + ' · ' + vin;
+  document.getElementById('hdr-user').textContent = 'Storing Unit · ' + username;
+  document.getElementById('acc-hint').textContent = 'One photo per item · ' + selectedModel;
+  buildAccessories();
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-checklist').style.display = 'block';
+}
+
+function buildAccessories() {
+  const container = document.getElementById('acc-container');
+  container.innerHTML = '';
+  const items = ACCESSORIES[selectedModel] || {};
+  Object.entries(items).forEach(([key, label]) => {
+    container.innerHTML += `
+      <div class="acc-item">
+        <label class="acc-label">
+          <input type="checkbox" id="chk-${key}" /> ${label}
+        </label>
+        <div class="photo-row">
+          <button class="photo-btn" onclick="pickPhoto('acc-${key}')">📷 Take Photo (preview only)</button>
+          <img id="thumb-acc-${key}" class="thumb" style="display:none;" />
+        </div>
+        <input type="file" id="file-acc-${key}" accept="image/*" capture="environment" style="display:none;" onchange="previewPhoto('acc-${key}',this)" />
+      </div>`;
+  });
+}
+
+function pickPhoto(key) { document.getElementById('file-' + key).click(); }
+
+function previewPhoto(key, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const thumb = document.getElementById('thumb-' + key);
+    thumb.src = e.target.result;
+    thumb.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function checkVoltage() {
+  const v = parseFloat(document.getElementById('inp-voltage').value);
+  document.getElementById('alert-voltage').style.display = (!isNaN(v) && v < 12.5) ? 'block' : 'none';
+}
+function checkSoc() {
+  const s = parseFloat(document.getElementById('inp-soc').value);
+  document.getElementById('alert-soc').style.display = (!isNaN(s) && s < 30) ? 'block' : 'none';
+}
+
+function addLog(msg, type='info') {
+  logs.push({msg, type});
+  const panel = document.getElementById('log-panel');
+  panel.innerHTML = logs.map(l =>
+    `<p class="${l.type}">${l.type==='ok'?'✓':l.type==='err'?'✗':l.type==='warn'?'⚠':'•'} ${l.msg}</p>`
+  ).join('');
+  panel.scrollTop = panel.scrollHeight;
+}
+
+async function handleSubmit() {
+  logs = [];
+  document.getElementById('log-panel').innerHTML = '';
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('btn-submit').textContent = 'Saving to Sheet…';
+
+  try {
+    addLog('Building checklist payload…');
+
+    const accItems = ACCESSORIES[selectedModel] || {};
+    const accessories = {};
+    Object.keys(accItems).forEach(key => {
+      const checked  = document.getElementById('chk-' + key)?.checked || false;
+      const hasPhoto = document.getElementById('thumb-acc-' + key)?.style.display !== 'none';
+      accessories[key] = { checked, photoUrl: hasPhoto ? '[photo via Android app]' : '' };
+    });
+
+    const username = document.getElementById('inp-username').value.trim();
+    const vin      = document.getElementById('inp-vin').value.trim();
+    const hasTire  = document.getElementById('thumb-tire').style.display !== 'none';
+    const hasVolt  = document.getElementById('thumb-voltage').style.display !== 'none';
+    const hasSoc   = document.getElementById('thumb-soc').style.display !== 'none';
+    const hasRem   = document.getElementById('thumb-remarks').style.display !== 'none';
+
+    const payload = {
+      username,
+      model: selectedModel,
+      vin,
+      tirePressure: document.getElementById('inp-tire').value,
+      tirePhotoUrl: hasTire ? '[photo via Android app]' : '',
+      voltage: document.getElementById('inp-voltage').value,
+      voltagePhotoUrl: hasVolt ? '[photo via Android app]' : '',
+      soc: document.getElementById('inp-soc').value,
+      socPhotoUrl: hasSoc ? '[photo via Android app]' : '',
+      accessories,
+      remarks: document.getElementById('inp-remarks').value,
+      remarksPhotoUrl: hasRem ? '[photo via Android app]' : '',
+    };
+
+    addLog('Submitting to VDC_Storing_Unit_His via GET…');
+
+    const url = ENDPOINT + '?action=submitChecklist&payload=' + encodeURIComponent(JSON.stringify(payload));
+    const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+    const json = await res.json();
+
+    if (json.status !== 'ok') throw new Error(json.message || 'Submit failed');
+
+    addLog('Row saved to sheet ✓', 'ok');
+    addLog('Photos previewed locally — Drive upload from Android app', 'warn');
+
+    setTimeout(() => {
+      document.getElementById('success-info').textContent = selectedModel + ' · ' + vin;
+      document.getElementById('screen-checklist').style.display = 'none';
+      document.getElementById('screen-success').style.display = 'block';
+    }, 800);
+
+  } catch (err) {
+    addLog('Error: ' + err.message, 'err');
+    addLog('Tip: Make sure Kode.gs was updated and redeployed (new version).', 'warn');
+    document.getElementById('btn-submit').disabled = false;
+    document.getElementById('btn-submit').textContent = 'Submit Checklist';
+  }
+}
+
+function goBack() {
+  document.getElementById('screen-checklist').style.display = 'none';
+  document.getElementById('screen-login').style.display = 'block';
+}
+
+function resetApp() {
+  logs = [];
+  selectedModel = '';
+  document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('inp-username').value = '';
+  document.getElementById('inp-vin').value = '';
+  document.getElementById('vin-count').textContent = '0/17';
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('screen-success').style.display = 'none';
+  document.getElementById('screen-login').style.display = 'block';
+  document.getElementById('btn-submit').disabled = false;
+  document.getElementById('btn-submit').textContent = 'Submit Checklist';
+}
+</script>
+</body>
+</html>
